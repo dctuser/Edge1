@@ -1,0 +1,244 @@
+{
+  "$schema-template": "2.0.0",
+  "modulesContent": {
+    "$edgeAgent": {
+      "properties.desired": {
+        "schemaVersion": "1.0",
+        "runtime": {
+          "type": "docker",
+          "settings": {
+            "minDockerVersion": "v1.25",
+            "loggingOptions": "",
+            "registryCredentials": {
+              "workspacekbm3d4796b5": {
+                "username": "$CONTAINER_REGISTRY_USERNAME_workspacekbm3d4796b5",
+                "password": "$CONTAINER_REGISTRY_PASSWORD_workspacekbm3d4796b5",
+                "address": "workspacekbm3d4796b5.azurecr.io"
+              }
+            }
+          }
+        },
+        "systemModules": {
+          "edgeAgent": {
+            "type": "docker",
+            "settings": {
+              "image": "mcr.microsoft.com/azureiotedge-agent:1.0",
+              "createOptions": {}
+            }
+          },
+          "edgeHub": {
+            "type": "docker",
+            "status": "running",
+            "restartPolicy": "always",
+            "settings": {
+              "image": "mcr.microsoft.com/azureiotedge-hub:1.0",
+              "createOptions": {
+                "HostConfig": {
+                  "PortBindings": {
+                    "5671/tcp": [
+                      {
+                        "HostPort": "5671"
+                      }
+                    ],
+                    "8883/tcp": [
+                      {
+                        "HostPort": "8883"
+                      }
+                    ],
+                    "443/tcp": [
+                      {
+                        "HostPort": "443"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "modules": {
+          "sql": {
+            "version": "1.0",
+            "type": "docker",
+            "status": "running",
+            "restartPolicy": "always",
+            "settings": {
+              "image": "microsoft/mssql-server-linux:2017-latest",
+              "createOptions": {
+                "Env": [
+                  "ACCEPT_EULA=Y",
+                  "MSSQL_SA_PASSWORD=Strong!Passw0rd"
+                ],
+                "HostConfig": {
+                  "Mounts": [
+                    {
+                      "Source": "sqlVolume",
+                      "Target": "/var/opt/mssql",
+                      "Type": "volume"
+                    }
+                  ],
+                  "PortBindings": {
+                    "1433/tcp": [
+                      {
+                        "HostPort": "1401"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "OPCPublisher": {
+            "version": "1.0",
+            "type": "docker",
+            "status": "running",
+            "restartPolicy": "always",
+            "settings": {
+              "image": "mcr.microsoft.com/iotedge/opc-publisher:latest",
+              "createOptions": {
+                "Cmd": [
+                  "--aa",
+                  "--to",
+                  "--di=60"
+                ],
+                "Hostname": "publisher"
+              }
+            }
+          },
+          "Data2dbModule": {
+            "version": "1.0",
+            "type": "docker",
+            "status": "running",
+            "restartPolicy": "always",
+            "settings": {
+              "image": "${MODULES.Data2dbModule.debug}",
+              "createOptions": {
+                "ExposedPorts": {
+                  "5678/tcp": {}
+                },
+                "HostConfig": {
+                  "PortBindings": {
+                    "5678/tcp": [
+                      {
+                        "HostPort": "5678"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "ScoringModule": {
+            "version": "1.0",
+            "type": "docker",
+            "status": "running",
+            "restartPolicy": "always",
+            "settings": {
+              "image": "${MODULES.ScoringModule.debug}",
+              "createOptions": {
+                "ExposedPorts": {
+                  "5678/tcp": {}
+                },
+                "HostConfig": {
+                  "PortBindings": {
+                    "5678/tcp": [
+                      {
+                        "HostPort": "5678"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "BeamScoringModule": {
+            "version": "1.0",
+            "type": "docker",
+            "status": "running",
+            "restartPolicy": "always",
+            "settings": {
+              "image": "${MODULES.BeamScoringModule.debug}",
+              "createOptions": {
+                "ExposedPorts": {
+                  "5678/tcp": {}
+                },
+                "HostConfig": {
+                  "PortBindings": {
+                    "5678/tcp": [
+                      {
+                        "HostPort": "5678"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "LMDScoringModule": {
+            "version": "1.0",
+            "type": "docker",
+            "status": "running",
+            "restartPolicy": "always",
+            "settings": {
+              "image": "${MODULES.LMDScoringModule.debug}",
+              "createOptions": {
+                "ExposedPorts": {
+                  "5678/tcp": {}
+                },
+                "HostConfig": {
+                  "PortBindings": {
+                    "5678/tcp": [
+                      {
+                        "HostPort": "5678"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "ShowDashboardModule": {
+            "version": "1.0",
+            "type": "docker",
+            "status": "running",
+            "restartPolicy": "always",
+            "settings": {
+              "image": "${MODULES.ShowDashboardModule.debug}",
+              "createOptions": {
+                "ExposedPorts": {
+                  "5678/tcp": {}
+                },
+                "HostConfig": {
+                  "PortBindings": {
+                    "5678/tcp": [
+                      {
+                        "HostPort": "5678"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "$edgeHub": {
+      "properties.desired": {
+        "schemaVersion": "1.0",
+        "routes": {
+          "sqlToIoTHub": "FROM /messages/modules/sql/outputs/* INTO $upstream",
+          "OPCPublisherToIoTHub": "FROM /messages/modules/OPCPublisher/outputs/* INTO $upstream",
+          "Data2dbModuleToIoTHub": "FROM /messages/modules/Data2dbModule/outputs/* INTO $upstream",
+          "ScoringModuleToIoTHub": "FROM /messages/modules/ScoringModule/outputs/* INTO $upstream",
+          "BeamScoringModuleToIoTHub": "FROM /messages/modules/BeamScoringModule/outputs/* INTO $upstream",
+          "LMDScoringModuleToIoTHub": "FROM /messages/modules/LMDScoringModule/outputs/* INTO $upstream",
+          "ShowDashboardModuleToIoTHub": "FROM /messages/modules/ShowDashboardModule/outputs/* INTO $upstream"
+        },
+        "storeAndForwardConfiguration": {
+          "timeToLiveSecs": 7200
+        }
+      }
+    }
+  }
+}

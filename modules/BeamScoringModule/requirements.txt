@@ -1,0 +1,10 @@
+azure-iot-device~=2.0.0
+pandas~=1.0.5
+#pyodbc  // no need, already installed from dockerfile.am64 directly
+sklearn==0.0
+pickles~=0.1.1
+numpy~=1.19.0
+six~=1.15.0
+azureml-core~=1.13.0
+scipy~=1.5.2
+scikit-learn==0.20.4
